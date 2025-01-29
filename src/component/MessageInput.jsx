@@ -1,12 +1,58 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Send } from "lucide-react";
+import { useSocket } from "../context/SocketContext";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getLoginUserDetails } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
-function MessageInput({ handleSendMessage }) {
+function MessageInput({ chatId }) {
   const [messageInput, setMessageInput] = useState("");
+  const queryClient = useQueryClient();
+
+  const socket = useSocket();
+  const { user } = useAuth();
+  const userId = user?.id;
+
+  const sendMessage = (message) => {
+    if (socket && chatId && message) {
+      socket.emit("newMessage", chatId, userId, message);
+    }
+  };
+
+  useEffect(() => {
+    if (socket && chatId) {
+      socket.on("newMessage", ({ senderId, message }) => {
+        queryClient.setQueryData(["getChats", chatId], (oldData) => {
+          if (!oldData) return;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page, index) =>
+              index === 0
+                ? {
+                    ...page,
+                    data: [
+                      {
+                        senderId,
+                        message,
+                        username: user?.username,
+                      },
+                      ...page.data,
+                    ],
+                  }
+                : page
+            ),
+          };
+        });
+      });
+    }
+    return () => {
+      socket.off("newMessage");
+    };
+  }, [chatId]);
 
   const handleSend = () => {
     if (messageInput.trim()) {
-      handleSendMessage(messageInput);
+      sendMessage(messageInput);
       setMessageInput("");
     }
   };
