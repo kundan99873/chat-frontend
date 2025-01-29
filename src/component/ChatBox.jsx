@@ -1,19 +1,21 @@
 import dayjs from "dayjs";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IoCheckmarkDoneSharp } from "react-icons/io5";
 
-function ChatBox({ userId, messages }) {
+function ChatBox({ userId, messages, topRef }) {
   console.log({ userId, messages });
   const messagesEndRef = useRef(null);
+  // const [firstRender, setFirstRender] = useState(true);
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, []);
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-      {messages.map((message, idx) => (
+      <div ref={topRef}></div>
+      {messages?.reverse()?.map((message, idx) => (
         <div
           key={idx}
           className={`flex ${
@@ -34,7 +36,6 @@ function ChatBox({ userId, messages }) {
           >
             <p>{message.message}</p>
             <div className="flex items-center ">
-              {console.log(message.isSeen)}
               {message.senderId == userId && (
                 <IoCheckmarkDoneSharp
                   size={20}

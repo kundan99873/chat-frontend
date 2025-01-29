@@ -61,6 +61,7 @@ function Sidebar({ selectedUser, setSelectedUser }) {
     console.log("Logout");
   };
 
+  console.log({ debouncedSearch });
   // Debounce the search term
 
   // Filter contacts based on the debounced search term
@@ -113,7 +114,7 @@ function Sidebar({ selectedUser, setSelectedUser }) {
 
       {/* Contacts List */}
       <div className="flex-1 overflow-y-auto">
-        {filteredContacts?.map((contact) => (
+        {data?.data?.map((contact) => (
           <div
             key={contact.id}
             onClick={() => setSelectedUser(contact.userId)}
