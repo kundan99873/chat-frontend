@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.1.113:3000/api",
+  baseURL: "http://localhost:3000/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -29,12 +29,16 @@ export const getLoginUserDetails = async (data) => {
 };
 
 export const getAvailableUsers = async (data) => {
-  const result = await axiosInstance.get(`/user/all-users`, data);
+  const result = await axiosInstance.get(`/user/all-users`, {
+    params: data,
+  });
   return await result.data;
 };
 
-export const getMessages = async (id) => {
-  const result = await axiosInstance.get(`/chat/get-messages/${id}`);
+export const getMessages = async (id, page) => {
+  const result = await axiosInstance.get(`/chat/get-messages/${id}`, {
+    params: { page, limit: 15 },
+  });
   return await result.data;
 };
 

@@ -1,11 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import {
   getLoginUserDetails,
   getMessages,
   updateSeenMessage,
 } from "../services/api";
-import { useMutation, useQuery, QueryClient } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
+import {
+  useMutation,
+  useQuery,
+  QueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import ChatBox from "../component/ChatBox";
 import SideBar from "../component/SideBar";
 import Header from "../component/ChatHeader";
@@ -18,10 +24,29 @@ const ChatApp = () => {
   const [messages, setMessages] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
 
+  const {} = useInfiniteQuery({
+    queryKey: ["getChats", chatId],
+    queryFn: ({ pageParam }) => {
+      if (chatId) {
+        return getMessages(chatId, pageParam);
+      }
+      return [];
+    },
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage?.pagination?.hasMore ? pages.length + 1 : undefined;
+    },
+    retry: false,
+  });
+
+  const { ref, inView, entry } = useInView({
+    threshold: 0,
+  });
+
   const { data, isLoading } = useQuery({
     queryKey: ["loggedInUser"],
     queryFn: getLoginUserDetails,
     retry: false,
+    refetchOnWindowFocus: false,
   });
 
   const seenChat = useMutation({
@@ -43,7 +68,7 @@ const ChatApp = () => {
   useEffect(() => {
     if (!userId) return;
 
-    const newSocket = io("http://192.168.1.113:3000", {
+    const newSocket = io("http://localhost:3000", {
       withCredentials: true,
     });
     setSocket(newSocket);
@@ -64,10 +89,10 @@ const ChatApp = () => {
   }, [userId]);
 
   useEffect(() => {
-    if (chatId) {
-      seenChat.mutate({ chatId });
+    if (chatId && userId) {
+      seenChat.mutate({ chatId, userId: selectedUser });
     }
-  }, [chatId]);
+  }, [chatId, userId]);
 
   const { data: messageData, isError } = useQuery({
     queryKey: ["getChats", chatId],
@@ -108,6 +133,7 @@ const ChatApp = () => {
     <div className="flex h-screen bg-gray-100">
       <SideBar setSelectedUser={setSelectedUser} selectedUser={selectedUser} />
       <div className="flex-1 flex flex-col">
+        <div ref={ref}></div>
         {selectedUser && <Header userId={selectedUser} />}
         <ChatBox messages={messages} userId={userId} />
         {selectedUser && <MessageInput handleSendMessage={sendMessage} />}
@@ -117,13 +143,3 @@ const ChatApp = () => {
 };
 
 export default ChatApp;
-
-// <div className="flex h-screen">
-//   <SideBar setSelectedUser={setSelectedUser} selectedUser={selectedUser} />
-//   <ChatBox
-//     userId={userId}
-//     messages={messages}
-//     sendMessage={sendMessage}
-//     selectedUser={selectedUser}
-//   />
-// </div>
