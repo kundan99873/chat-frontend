@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { capitalizeFirstLetter, getTimeDifference } from "../utils/utils";
 import { getUserDetailsById } from "../services/api";
 
-function Header({ userId }) {
+function Header({ userId, setVideo }) {
   console.log({ userId });
   const { data, isLoading } = useQuery({
     queryKey: ["getUserDetails", userId],
@@ -34,17 +34,20 @@ function Header({ userId }) {
             )}
           </div>
         </div>
-        {/* <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-100 rounded-full">
+        <div className="flex items-center gap-2">
+          {/* <button className="p-2 hover:bg-gray-100 rounded-full">
             <Phone size={20} className="text-gray-600" />
+          </button> */}
+          <button
+            className="p-2 hover:bg-gray-100 cursor-pointer rounded-full"
+            onClick={() => setVideo(true)}
+          >
+            <Video size={25} className="text-gray-600" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <Video size={20} className="text-gray-600" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
+          <button className="p-2 hover:bg-gray-100 cursor-pointer rounded-full">
             <MoreVertical size={20} className="text-gray-600" />
           </button>
-        </div> */}
+        </div>
       </div>
     </div>
   );
