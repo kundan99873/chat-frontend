@@ -12,6 +12,10 @@ export const authenticateUser = async () => {
   const result = await axiosInstance.get(`/user/authenticate`);
   return await result.data;
 };
+export const refreshToken = async () => {
+  const result = await axiosInstance.get(`/user/refresh_token`);
+  return await result.data;
+};
 
 export const loginUser = async (data) => {
   const result = await axiosInstance.post(`/user/login`, data);
